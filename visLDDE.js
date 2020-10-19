@@ -17,7 +17,6 @@ var edges = new vis.DataSet([
 ]);
 
 //comentario de teste
-
 var container = document.getElementById("mynetwork");
 
 var data = {
