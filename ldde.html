@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="pt">
+    <head>
+        <title>LDDE</title>
+
+        <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+
+    </head>
+    <body style="background-color: #212121">
+
+        <div>
+            <form>
+                <Label style="color: #ffffff">Valor:</Label>
+                <input type="number" id="inpValue"><br><br>
+                <p type="submit" id="add" onclick="AddNodes()" style="color: #ffffff">Adicionar</p> 
+                <p type="submit" id="add" onclick="" style="color: #ffffff">Busca</p>
+                <p type="submit" id="add" onclick="arrRemove()" style="color: #ffffff">Remoção</p>
+            </form>
+        </div>
+
+        <br>
+
+        <div id="mynetwork"></div>
+
+    </body>
+
+    <script src="visLDDE.js"></script>
+
+</html>
