@@ -1,22 +1,53 @@
 var network;
 
-var nodes = new vis.DataSet([
-    {id: 0, label: "", group: 1},
-    {id: 1, label: "", group: 1},
-    {id: 2, label: "1", group: 0},
-    {id: 3, label: "6", group: 0},
+var nodes = new vis.DataSet([{
+        id: 0,
+        label: "",
+        group: 1
+    },
+    {
+        id: 1,
+        label: "",
+        group: 1
+    },
+    {
+        id: 2,
+        label: "1",
+        group: 0
+    },
+    {
+        id: 3,
+        label: "6",
+        group: 0
+    },
 ]);
 
 var n = nodes.length;
+let nodesIds = n;
+let edgesIds = 3;
 
-var edges = new vis.DataSet([
-    {id: 0, from: 2, to: 3},
-    {id: 1, from: 3, to: 2},
-    {id: 2, from: 3, to: 0},
-    {id: 3, from: 2, to: 1},
+var edges = new vis.DataSet([{
+        id: 0,
+        from: 2,
+        to: 3
+    },
+    {
+        id: 1,
+        from: 3,
+        to: 2
+    },
+    {
+        id: 2,
+        from: 3,
+        to: 0
+    },
+    {
+        id: 3,
+        from: 2,
+        to: 1
+    },
 ]);
 
-//comentario de teste
 var container = document.getElementById("mynetwork");
 
 var data = {
@@ -30,31 +61,31 @@ var options = {
     clickToUse: false,
     groups: {
         0: {
-            color:{
-                background:'#26b8e0', 
-                border:'#2a30db', 
-                highlight:{
+            color: {
+                background: '#26b8e0',
+                border: '#2a30db',
+                highlight: {
                     border: '#171b96',
                     background: '#6db4de',
                 },
-        }, 
-        borderWidth: 3,
+            },
+            borderWidth: 3,
         },
         1: {
-            color:{
-                background:'#7a7a7a', 
-                border:'#403c3c',
-                highlight:{
+            color: {
+                background: '#7a7a7a',
+                border: '#403c3c',
+                highlight: {
                     border: '#000000',
                     background: '#403c3c',
                 },
-            }, 
+            },
             borderWidth: 3,
         }
     },
     edges: {
-        arrows:{
-            to:{
+        arrows: {
+            to: {
                 enabled: true,
                 scaleFactor: 1,
                 type: "arrow",
@@ -77,7 +108,7 @@ var options = {
     }
 };
 
-function arrRemove(arr, index){
+function arrRemove(arr, index) {
     //for(var i = index; i < arr.length - 1; i++){
     //    arr[i] = arr[i+1];
     //}
@@ -86,75 +117,143 @@ function arrRemove(arr, index){
 
 };
 
-function AdjustPosition(id){
-      var nodesItems = nodes.get({
+function AdjustPosition(id) {
+    var nodesItems = nodes.get({
         fields: ['id', 'label'],
         type: {
-          date: 'ISODate'
+            date: 'ISODate'
         }
-      });
+    });
 
-      var edgesItems = edges.get({
+    var edgesItems = edges.get({
         fields: ['id', 'from', 'to'],
         type: {
-          date: 'ISODate'
+            date: 'ISODate'
         }
-      });
+    });
 
-      var greatest = 0;
-      var smallest = 0;
+    var greater;
+    var smaller;
 
-      for(var i = 2; i < nodes.length; i++){
-          if(nodesItems[id].label < nodesItems[i].label){
-            smallest = i;
+    for (var i = 2; i < nodes.length; i++) {
+        if (parseInt(nodesItems[id].label) < parseInt(nodesItems[i].label)) {
+            index = nodesItems[i];
+
+            if (!smaller) {
+                smaller = index.id;
+                smallerValue = parseInt(index.label);
+            } else {
+                if (parseInt(index.label) < smallerValue) {
+                    smaller = index.id;
+                }
+            }
+
             console.log(nodesItems[id].label, " is lesser than", nodesItems[i].label);
-          }
-          else{
-              console.log(nodesItems[id].label, " is equal or greater than ", nodesItems[i].label);
-              if(id != i){
-                greatest = i;
-                //edges.add({from: id, to: i});
-              }
-          }
-      }
+        } else {
+            console.log(nodesItems[id].label, " is equal or greater than ", nodesItems[i].label);
+            if (id != i) {
+                index = nodesItems[i];
 
-      console.log(edges.length)
+                if (!greater) {
+                    greater = index.id;
+                    greaterValue = parseInt(index.label);
+                } else if (parseInt(index.label) >= greaterValue) {
+                    greater = index.id;
+                    greaterValue = parseInt(index.label)
+                }
+            }
+        }
+    }
 
-      console.log(smallest)
-      console.log(greatest)
+    console.log(edges.length)
 
-      for(var j = 0; j < edges.length; j++){
-          if(smallest && greatest){
-              if(edgesItems[j].from == smallest && edgesItems[j].to == greatest ||
-                 edgesItems[j].to == smallest && edgesItems[j].from == greatest){
-                  console.log(edgesItems[j])
-                  edges.remove({id: j})
-              }
-          }
-      }
-      
-      edges.add({id: edges.length + 2, from: smallest, to: id})
-      edges.add({id: edges.length + 3, from: id, to: smallest})
-      edges.add({id: edges.length + 4, from: greatest, to: id})
-      edges.add({id: edges.length + 5, from: id, to: greatest})
-      
-      //edges.add({from: id, to: greatest});
-      //edges.add({from: id, to: 0});
-      
+    console.log("Smaller: " + smaller)
+    console.log("Greater: " + greater)
+
+    for (var j = 0; j < edgesItems.length; j++) {
+        if (smaller && greater) {
+            if ((edgesItems[j].from == smaller && edgesItems[j].to == greater) ||
+                (edgesItems[j].to == smaller && edgesItems[j].from == greater)) {
+                console.log("Removed: " + edgesItems[j])
+                edges.remove({
+                    id: edgesItems[j].id
+                });
+            }
+        }
+        if (!smaller) {
+            if (edgesItems[j].to == '0') {
+                edges.remove({
+                    id: edgesItems[j].id
+                });
+                edgesIds++;
+                edges.add({
+                    id: edgesIds,
+                    from: id,
+                    to: '0'
+                });
+            }
+        }
+        if (!greater) {
+            if (edgesItems[j].to == '1') {
+                edges.remove({
+                    id: edgesItems[j].id
+                });
+                edgesIds++;
+                edges.add({
+                    id: edgesIds,
+                    from: id,
+                    to: '1'
+                });
+            }
+        }
+    }
+
+    edgesIds++;
+    edges.add({
+        id: edgesIds,
+        from: smaller,
+        to: id
+    })
+    edgesIds++;
+    edges.add({
+        id: edgesIds,
+        from: id,
+        to: smaller
+    })
+    edgesIds++;
+    edges.add({
+        id: edgesIds,
+        from: greater,
+        to: id
+    })
+    edgesIds++;
+    edges.add({
+        id: edgesIds,
+        from: id,
+        to: greater
+    })
+
+    //edges.add({from: id, to: greater});
+    //edges.add({from: id, to: 0});
+
 
 };
 
-function AddNodes(){
+function AddNodes() {
     nodeId = nodes.length;
     nodeValue = document.getElementById("inpValue").value;
-    nodes.add({id: nodeId, label: nodeValue, group: 0});
+    nodes.add({
+        id: nodeId,
+        label: nodeValue,
+        group: 0
+    });
     //edges.add({from: nodeId, to: 2});
-
+    console.log("Edge ID: " + edgesIds)
     AdjustPosition(nodeId);
 
 };
 
-function UpdateScreen(){
+function UpdateScreen() {
     var network = new vis.Network(container, data, options);
 
 };
