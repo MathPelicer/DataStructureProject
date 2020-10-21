@@ -1,51 +1,127 @@
+//------------------------------ LDDE IMPLEMENTATION ------------------------------
+
+class Node {
+    constructor(data) {
+        this.data = data;
+        this.next = null;
+        this.prev = null;
+    }
+}
+
+class DoubleLinkedList {
+    constructor() {
+        this.firstNode = null;
+        this.lastNode = null;
+        this.n = 0;
+    }
+
+    insert(value) {
+        let newNode = new Node(value);
+
+        if (!newNode) {
+            return false;
+        }
+
+        newNode.data = value;
+        newNode.prev = null;
+        newNode.next = null;
+
+        var antPtr = null;
+        var curPtr = this.firstNode;
+
+        while (curPtr != null && curPtr.data < value) {
+            antPtr = curPtr;
+            curPtr = curPtr.next;
+        }
+
+        if (antPtr != null) {
+            antPtr.next = newNode;
+        } else {
+            this.firstNode = newNode;
+        }
+
+        newNode.next = curPtr;
+
+        if (curPtr != null) {
+            curPtr.prev = newNode;
+        } else {
+            this.lastNode = newNode;
+        }
+
+        newNode.prev = antPtr;
+
+        this.n++;
+        return true;
+    }
+
+    remove(value) {
+        if (this.n === 0) {
+            return false;
+        }
+
+        var antPtr = new Node(null);
+        var curPtr = this.firstNode;
+
+        while (curPtr != null && curPtr.data < value) {
+            antPtr = curPtr;
+            curPtr = curPtr.next;
+        }
+
+        if (curPtr.data != value) {
+            return false;
+        }
+
+        if (antPtr) {
+            antPtr.next = curPtr.next;
+        } else {
+            this.firstNode = curPtr.next;
+        }
+
+        if (curPtr.next) {
+            var nextPtr = curPtr.next;
+            nextPtr.prev = curPtr.prev;
+        } else {
+            this.lastNode = curPtr.prev;
+        }
+
+        //delete(curPtr);
+        this.n--;
+        return true;
+    }
+
+    search(value) {
+        if (this.n === 0) {
+            return false;
+        }
+
+        var antPtr = new Node(null);
+        var curPtr = this.firstNode;
+
+        while (curPtr != null && curPtr.data < value && curPtr.next != null) {
+            antPtr = curPtr;
+            curPtr = curPtr.next;
+        }
+
+        if (curPtr.data != value) {
+            return false;
+        }
+
+        return true;
+    }
+}
+
+// ------------------------- VIS NETWORK -----------------------------
+
 var network;
 
-var nodes = new vis.DataSet([{
-        id: 0,
-        label: "",
-        group: 1
-    },
-    {
-        id: 1,
-        label: "",
-        group: 1
-    },
-    {
-        id: 2,
-        label: "1",
-        group: 0
-    },
-    {
-        id: 3,
-        label: "6",
-        group: 0
-    },
+var nodesIds = 0;
+var nodes = new vis.DataSet([
+
 ]);
 
-var n = nodes.length;
-let nodesIds = n;
-let edgesIds = 3;
+var edgesIds = 0;
+var edges = new vis.DataSet([
 
-var edges = new vis.DataSet([{
-        id: 0,
-        from: 2,
-        to: 3
-    },
-    {
-        id: 1,
-        from: 3,
-        to: 2
-    },
-    {
-        id: 2,
-        from: 3,
-        to: 0
-    },
-    {
-        id: 3,
-        from: 2,
-        to: 1
-    },
 ]);
 
 var container = document.getElementById("mynetwork");
@@ -108,23 +184,89 @@ var options = {
     }
 };
 
-function arrRemove(arr, index) {
-    //for(var i = index; i < arr.length - 1; i++){
-    //    arr[i] = arr[i+1];
-    //}
-    //nodes.remove(1)
-    //arr.pop();
+function ReadDoubleLinkedList() {
+    var temp = l.firstNode;
 
-};
+    nodes.add({
+        id: nodesIds,
+        label: "",
+        group: 1
+    });
+    var first = nodesIds;
+    nodesIds++;
+    nodes.add({
+        id: nodesIds,
+        label: "",
+        group: 1
+    });
+    var last = nodesIds;
+    nodesIds++;
 
-function AdjustPosition(id) {
+    while (temp) {
+        nodes.add({
+            id: nodesIds,
+            label: String(temp.data),
+            group: 0
+        });
+
+        if (temp.prev == null) {
+            edges.add({
+                id: edgesIds,
+                from: String(nodesIds),
+                to: String(first)
+            });
+            edgesIds++;
+        } else if (temp.next == null) {
+            edges.add({
+                id: edgesIds,
+                from: String(prevNode),
+                to: String(nodesIds)
+            });
+            edgesIds++;
+            edges.add({
+                id: edgesIds,
+                from: String(nodesIds),
+                to: String(prevNode)
+            });
+            edgesIds++;
+            edges.add({
+                id: edgesIds,
+                from: String(nodesIds),
+                to: String(last)
+            });
+            edgesIds++;
+        } else {
+            edges.add({
+                id: edgesIds,
+                from: String(prevNode),
+                to: String(nodesIds)
+            });
+            edgesIds++;
+            edges.add({
+                id: edgesIds,
+                from: String(nodesIds),
+                to: String(prevNode)
+            });
+            edgesIds++;
+        }
+
+        nodesIds++;
+        prevNode = nodesIds - 1;
+        temp = temp.next;
+    }
+}
+
+function AddNodes() {
+    newNodeValue = document.getElementById("inpValue").value;
+    l.insert(newNodeValue);
+
     var nodesItems = nodes.get({
         fields: ['id', 'label'],
         type: {
             date: 'ISODate'
         }
     });
-
+ 
     var edgesItems = edges.get({
         fields: ['id', 'from', 'to'],
         type: {
@@ -132,77 +274,91 @@ function AdjustPosition(id) {
         }
     });
 
-    var greater;
-    var smaller;
+    // criar função separada pro bobble sort
 
-    for (var i = 2; i < nodes.length; i++) {
-        if (parseInt(nodesItems[id].label) < parseInt(nodesItems[i].label)) {
-            index = nodesItems[i];
-
-            if (!smaller) {
-                smaller = index.id;
-                smallerValue = parseInt(index.label);
-            } else {
-                if (parseInt(index.label) < smallerValue) {
-                    smaller = index.id;
-                }
-            }
-
-            console.log(nodesItems[id].label, " is lesser than", nodesItems[i].label);
-        } else {
-            console.log(nodesItems[id].label, " is equal or greater than ", nodesItems[i].label);
-            if (id != i) {
-                index = nodesItems[i];
-
-                if (!greater) {
-                    greater = index.id;
-                    greaterValue = parseInt(index.label);
-                } else if (parseInt(index.label) >= greaterValue) {
-                    greater = index.id;
-                    greaterValue = parseInt(index.label)
-                }
+    for(var j = 0; j < nodesItems.length; j++){
+        for(var i = 0; i < nodesItems.length - 1; i++){
+            if(parseInt(nodesItems[i].label) > parseInt(nodesItems[i + 1].label)){
+                var temp = nodesItems[i];
+                nodesItems[i] = nodesItems[i + 1];
+                nodesItems[i + 1] = temp;
             }
         }
     }
 
-    console.log(edges.length)
+    console.log(nodesItems);
 
-    console.log("Smaller: " + smaller)
-    console.log("Greater: " + greater)
+    var smaller;
+    var greater;
 
-    for (var j = 0; j < edgesItems.length; j++) {
+    for (var i = 0; i < nodes.length; i++) {
+        index = nodesItems[i];
+
+        if (parseInt(newNodeValue) < parseInt(index.label)) {
+
+            if (!smaller) {
+                smaller = index.id;
+                smallerValue = parseInt(index.label);
+            } else if (parseInt(index.label) < smallerValue) {
+                smaller = index.id;
+            }
+
+        } else if (index.label != "") {
+
+            if (!greater) {
+                greater = index.id;
+                greaterValue = parseInt(index.label);
+            } else if (parseInt(index.label) >= greaterValue) {
+                greater = index.id;
+                greaterValue = parseInt(index.label)
+            }
+        }
+    }
+
+    console.log("greater: " + greater)
+    console.log("smaller: " + smaller)
+
+    nodes.add({
+        id: nodesIds,
+        label: newNodeValue,
+        group: 0
+    });
+    var id = nodesIds;
+    nodesIds++;
+
+    for (var i = 0; i < edgesItems.length; i++) {
         if (smaller && greater) {
-            if ((edgesItems[j].from == smaller && edgesItems[j].to == greater) ||
-                (edgesItems[j].to == smaller && edgesItems[j].from == greater)) {
-                console.log("Removed: " + edgesItems[j])
+            if ((edgesItems[i].from == smaller && edgesItems[i].to == greater) ||
+                (edgesItems[i].to == smaller && edgesItems[i].from == greater)) {
+                console.log("Removed: " + edgesItems[i])
                 edges.remove({
-                    id: edgesItems[j].id
+                    id: edgesItems[i].id
                 });
             }
         }
         if (!smaller) {
-            if (edgesItems[j].to == '0') {
+            if (edgesItems[i].to == '1') {
                 edges.remove({
-                    id: edgesItems[j].id
-                });
-                edgesIds++;
-                edges.add({
-                    id: edgesIds,
-                    from: id,
-                    to: '0'
-                });
-            }
-        }
-        if (!greater) {
-            if (edgesItems[j].to == '1') {
-                edges.remove({
-                    id: edgesItems[j].id
+                    id: edgesItems[i].id
                 });
                 edgesIds++;
                 edges.add({
                     id: edgesIds,
                     from: id,
                     to: '1'
+                });
+            }
+        }
+        if (!greater) {
+            if (edgesItems[i].to == '0') {
+                edges.remove({
+                    id: edgesItems[i].id
+                });
+                edgesIds++;
+                edges.add({
+                    id: edgesIds,
+                    from: id,
+                    to: '0'
                 });
             }
         }
@@ -232,30 +388,70 @@ function AdjustPosition(id) {
         from: id,
         to: greater
     })
+}
 
-    //edges.add({from: id, to: greater});
-    //edges.add({from: id, to: 0});
+function RemoveNode(){
+    var removedNodeValue = document.getElementById("inpValue").value;
 
+    l.remove(parseInt(removedNodeValue))
 
-};
-
-function AddNodes() {
-    nodeId = nodes.length;
-    nodeValue = document.getElementById("inpValue").value;
-    nodes.add({
-        id: nodeId,
-        label: nodeValue,
-        group: 0
+    var nodesItems = nodes.get({
+        fields: ['id', 'label'],
+        type: {
+            date: 'ISODate'
+        }
     });
-    //edges.add({from: nodeId, to: 2});
-    console.log("Edge ID: " + edgesIds)
-    AdjustPosition(nodeId);
 
-};
+    var edgesItems = edges.get({
+        fields: ['id', 'from', 'to'],
+        type: {
+            date: 'ISODate'
+        }
+    });
+
+    for(var j = 0; j < nodesItems.length; j++){
+        for(var i = 0; i < nodesItems.length - 1; i++){
+            if(parseInt(nodesItems[i].label) > parseInt(nodesItems[i + 1].label)){
+                var temp = nodesItems[i];
+                nodesItems[i] = nodesItems[i + 1];
+                nodesItems[i + 1] = temp;
+            }
+        }
+    }
+
+    console.log(removedNodeValue);
+
+    var i = 2;
+    var prevNode;
+    var curNode;
+    var nextNode;
+
+    while(parseInt(nodesItems[i].label) < parseInt(removedNodeValue) && i + 1 < nodesItems.length){
+        prevNode = nodesItems[i];
+        curNode = nodesItems[i + 1];
+        i++;
+    }
+
+    if(curNode.data != parseInt(removedNodeValue)){
+        return false;
+    }
+
+    if()
+
+
+}
 
 function UpdateScreen() {
     var network = new vis.Network(container, data, options);
-
 };
 
+let l = new DoubleLinkedList();
+
+
+l.insert(4);
+l.insert(5);
+l.insert(6);
+
+
+ReadDoubleLinkedList();
 UpdateScreen();
