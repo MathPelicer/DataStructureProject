@@ -8,17 +8,19 @@
     </head>
     <body style="background-color: #212121">
 
-        <div>
-            <form>
-                <Label style="color: #ffffff">Valor:</Label>
-                <input type="number" id="inpValue"><br><br>
-                <p type="submit" id="add" onclick="AddNodes()" style="color: #ffffff">Adicionar</p> 
-                <p type="submit" id="add" onclick="" style="color: #ffffff">Busca</p>
-                <p type="submit" id="add" onclick="RemoveNode()" style="color: #ffffff">Remoção</p>
-            </form>
-        </div>
-
-        <br>
+        <table>
+            <tr>
+                <td colspan="4">
+                    <Label style="color: #ffffff">Valor:</Label>
+                    <input type="number" id="inpValue"><br><br>
+                </td>
+            </tr>
+            <tr>
+                <td><p type="submit" id="add" onclick="AddNodes()" style="color: #ffffff">Adicionar</p> </td>
+                <td><p type="submit" id="search" onclick="SearchNode()" style="color: #ffffff">Busca</p></td>
+                <td><p type="submit" id="remove" onclick="RemoveNode()" style="color: #ffffff">Remoção</p></td>
+            </tr>
+        </table>
 
         <div id="mynetwork"></div>
 

@@ -136,6 +136,7 @@ var options = {
     height: "600px",
     clickToUse: false,
     groups: {
+        //Azul
         0: {
             color: {
                 background: '#26b8e0',
@@ -147,6 +148,7 @@ var options = {
             },
             borderWidth: 3,
         },
+        //Cinza
         1: {
             color: {
                 background: '#7a7a7a',
@@ -154,6 +156,18 @@ var options = {
                 highlight: {
                     border: '#000000',
                     background: '#403c3c',
+                },
+            },
+            borderWidth: 3,
+        },
+        //Vermelho
+        2: {
+            color:{
+                background: '#d6747f',
+                border: '#d91e34',
+                highlight: {
+                    border: '#f00723',
+                    background: '#e89ba4',
                 },
             },
             borderWidth: 3,
@@ -391,26 +405,25 @@ function AddNodes() {
 }
 
 function RemoveNode(){
+    var i;
     var removedNodeValue = document.getElementById("inpValue").value;
 
-    l.remove(parseInt(removedNodeValue))
+    var verify = l.remove(parseInt(removedNodeValue));
+
+    if(!verify){
+        return false;
+    }
 
     var nodesItems = nodes.get({
-        fields: ['id', 'label'],
-        type: {
-            date: 'ISODate'
-        }
+        fields: ['id', 'label']
     });
 
     var edgesItems = edges.get({
-        fields: ['id', 'from', 'to'],
-        type: {
-            date: 'ISODate'
-        }
+        fields: ['id', 'from', 'to']
     });
 
     for(var j = 0; j < nodesItems.length; j++){
-        for(var i = 0; i < nodesItems.length - 1; i++){
+        for(i = 0; i < nodesItems.length - 1; i++){
             if(parseInt(nodesItems[i].label) > parseInt(nodesItems[i + 1].label)){
                 var temp = nodesItems[i];
                 nodesItems[i] = nodesItems[i + 1];
@@ -421,12 +434,13 @@ function RemoveNode(){
 
     console.log(removedNodeValue);
 
-    var i = 2;
-    var prevNode;
-    var curNode;
-    var nextNode;
+    var prevNodeId;
+    var nextNodeId;
+    var removedNodeId;
+    var firstNode;
+    var lastNode;
 
-    while(parseInt(nodesItems[i].label) < parseInt(removedNodeValue) && i + 1 < nodesItems.length){
+    /*while(parseInt(nodesItems[i].label) < parseInt(removedNodeValue) && i + 1 < nodesItems.length){
         prevNode = nodesItems[i];
         curNode = nodesItems[i + 1];
         i++;
@@ -436,8 +450,103 @@ function RemoveNode(){
         return false;
     }
 
-    if()
+    if()*/
 
+    for(i = 2; i < nodes.length; i++){
+        if(parseInt(nodesItems[i].label) == removedNodeValue){
+            removedNodeId = nodesItems[i].id;
+            nodes.remove({id: removedNodeId});
+            prevNodeId = nodesItems[i-1].id;
+            nextNodeId = nodesItems[i+1].id;
+            /*if(i = 2){
+                firstNode = true;
+                nextNodeId = nodesItems[i+1].id;
+            }
+            else if(i = nodes.length){
+                lastNode = true;
+                prevNodeId = nodesItems[i-1].id;
+            }
+            else{
+                prevNodeId = nodesItems[i-1].id;
+                nextNodeId = nodesItems[i+1].id;
+            }*/
+        }
+    }
+
+    for(i = 0; i < edges.length; i++){
+        if(edgesItems[i].from == removedNodeId){
+            edges.remove({id: edgesItems[i].id});
+        }
+
+        /*if(firstNode){
+            if(edgesItems[i].from == nextNodeId && edgesItems[i].to == removedNodeId){
+                console.log(edgesItems[i]);
+                edges.update({id: edgesItems[i].id, to: "0"});
+            }
+
+        }
+        else if(lastNode){
+            if(edgesItems[i].from == prevNodeId && edgesItems[i].to == removedNodeId){
+                console.log(edgesItems[i]);
+                edges.update({id: edgesItems[i].id, to: "1"});
+            }
+
+        }
+        else{
+            if(edgesItems[i].from == prevNodeId && edgesItems[i].to == removedNodeId){
+                console.log(edgesItems[i]);
+                edges.update({id: edgesItems[i].id, to:nextNodeId});
+            }
+            else if(edgesItems[i].from == nextNodeId && edgesItems[i].to == removedNodeId){
+                console.log(edgesItems[i]);
+                edges.update({id: edgesItems[i].id, to:prevNodeId});
+            }*/
+
+        if(edgesItems[i].from == prevNodeId && edgesItems[i].to == removedNodeId){
+                console.log(edgesItems[i]);
+                edges.update({id: edgesItems[i].id, to:nextNodeId});
+        }
+        else if(edgesItems[i].from == nextNodeId && edgesItems[i].to == removedNodeId){
+                console.log(edgesItems[i]);
+                edges.update({id: edgesItems[i].id, to:prevNodeId});
+        }
+        
+    }
+
+    console.log(nodesItems);
+    console.log(edgesItems);
+
+    return true;
+
+}
+
+function SearchNode(){
+    //define o valor de entrada em uma variável
+    var value = document.getElementById("inpValue").value;
+
+    //verifica se o elemento está na lista
+    if(!l.search(value)){
+        var str = "O elemento " + value + " não existe na lista.";
+        alert(str);
+        return false;
+    }
+
+    //cria um vetor acessivel com os elementos do vetor nodes
+    var nodesElem = nodes.get({
+        fields: ['id', 'label', 'group']
+    });
+
+    //procura o primeiro node com o mesmo valor de label q o 'value'
+    for(var i = 0; i < nodesElem.length; i++){
+        if(parseInt(nodesElem[i].label) == value){
+            var nodeId = nodesElem[i].id;
+            //atualiza a cor do node desejado
+            nodes.update({id: nodeId, group: 2});
+            //ativa um intervalo e depois retorna a cor do node para a cor original
+            setTimeout(() => { nodes.update({id: nodeId, group: 0}); }, 3500);
+            return true;
+        }
+    }
 
 }
 
