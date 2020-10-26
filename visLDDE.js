@@ -132,8 +132,8 @@ var data = {
 };
 
 var options = {
-    width: "1000px",
-    height: "600px",
+    width: "1600px",
+    height: "800px",
     clickToUse: false,
     groups: {
         //Azul
@@ -452,26 +452,47 @@ function RemoveNode(){
 
     if()*/
 
+    console.log(nodesItems);
+    console.log(edgesItems);
+
     for(i = 2; i < nodes.length; i++){
+        console.log("Iterações: ", i-1);
+        console.log(parseInt(nodesItems[i].label));
         if(parseInt(nodesItems[i].label) == removedNodeValue){
+            console.log("achou o valor");
             removedNodeId = nodesItems[i].id;
             nodes.remove({id: removedNodeId});
-            prevNodeId = nodesItems[i-1].id;
-            nextNodeId = nodesItems[i+1].id;
-            /*if(i = 2){
+            console.log("removeu o número");
+            /*prevNodeId = nodesItems[i-1].id;
+            nextNodeId = nodesItems[i+1].id;*/
+            if(i == 2){
+                console.log("primeiro node");
                 firstNode = true;
+                prevNodeId = nodesItems[0].id;
                 nextNodeId = nodesItems[i+1].id;
+                break;
             }
-            else if(i = nodes.length){
+            else if(i == nodes.length){
+                console.log("ultimo node");
                 lastNode = true;
                 prevNodeId = nodesItems[i-1].id;
+                break;
             }
             else{
+                console.log("outro node");
                 prevNodeId = nodesItems[i-1].id;
                 nextNodeId = nodesItems[i+1].id;
-            }*/
+                break;
+            }
         }
     }
+
+    console.log("estou aqui");
+    /*console.log("Prev: ", prevNodeId);
+    console.log("Next: ", nextNodeId);
+
+    console.log("Id: 0 = ", nodesItems[0]);
+    console.log("Id: 1 = ", nodesItems[1]);*/
 
     for(i = 0; i < edges.length; i++){
         if(edgesItems[i].from == removedNodeId){
@@ -503,18 +524,21 @@ function RemoveNode(){
             }*/
 
         if(edgesItems[i].from == prevNodeId && edgesItems[i].to == removedNodeId){
-                console.log(edgesItems[i]);
+                //console.log(edgesItems[i]);
                 edges.update({id: edgesItems[i].id, to:nextNodeId});
         }
         else if(edgesItems[i].from == nextNodeId && edgesItems[i].to == removedNodeId){
-                console.log(edgesItems[i]);
-                edges.update({id: edgesItems[i].id, to:prevNodeId});
+                //console.log(edgesItems[i]);
+                edges.update({id: edgesItems[i].id, to: prevNodeId});
         }
         
     }
 
-    console.log(nodesItems);
-    console.log(edgesItems);
+    if(lastNode){
+        edges.update({id: edgesItems[edges.length].id, from: prevNodeId, to: 1});
+    }
+
+    console.log(edgesItems[edges.length]);
 
     return true;
 
