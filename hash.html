@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="pt">
+    <head>
+        <title>Hash</title>
+
+        <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+
+    </head>
+    <body style="background-color: #212121">
+
+        <table>
+            <tr>
+                <td colspan="4">
+                    <Label style="color: #ffffff">Chave:</Label>
+                    <input type="number" id="keyValue"><br><br>
+                </td>
+                <td colspan="4">
+                    <Label style="color: #ffffff">Valor:</Label>
+                    <input id="inpValue"><br><br>
+                </td>
+            </tr>
+            <tr>
+                <td><p type="submit" id="add" onclick="Add()" style="color: #ffffff">Adicionar</p> </td>
+                <td><p type="submit" id="search" onclick="" style="color: #ffffff">Busca</p></td>
+                <td><p type="submit" id="remove" onclick="Delete()" style="color: #ffffff">Remoção</p></td>
+            </tr>
+        </table>
+
+        <div id="mynetwork"></div>
+
+    </body>
+
+    <script src="visHASH.js"></script>
+
+</html>
