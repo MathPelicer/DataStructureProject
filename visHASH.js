@@ -1,115 +1,97 @@
-//------------------------------ LDDE IMPLEMENTATION ------------------------------
+//------------------------------ HASH IMPLEMENTATION ------------------------------
 
-class Node {
-    constructor(data) {
-        this.data = data;
-        this.next = null;
-        this.prev = null;
+const MAX = 10;
+
+class KeyValue{
+    constructor(key, value){
+        this.key = key;
+        this.value = value;
     }
 }
 
-class DoubleLinkedList {
-    constructor() {
-        this.firstNode = null;
-        this.lastNode = null;
+class HashDictionary{
+    constructor(){
+        this.table = [];
         this.n = 0;
+
+        for(var i = 0; i < MAX; i++){
+            this.table.push(new Array());
+        }
+
+        StartingNodes();
+
     }
 
-    insert(value) {
-        let newNode = new Node(value);
+    insert(item){
+        const index = this.hashFunc(item.key % MAX);
 
-        if (!newNode) {
-            return false;
+        console.log(this.table);
+
+        if(!this.search(item.key)){
+            this.table[index].push(item);
+            this.n++;
+            return true;
         }
-
-        //newNode.data = value;
-        newNode.prev = null;
-        newNode.next = null;
-
-        var antPtr = null;
-        var curPtr = this.firstNode;
-
-        while (curPtr != null && curPtr.data.value < value) {
-            antPtr = curPtr;
-            curPtr = curPtr.next;
+        else{
+            alert("Já existe outro elemento com essa chave.");
         }
+        return false;
 
-        if (antPtr != null) {
-            antPtr.next = newNode;
-        } else {
-            this.firstNode = newNode;
-            console.log(this.firstNode)
-        }
-
-        newNode.next = curPtr;
-
-        if (curPtr != null) {
-            curPtr.prev = newNode;
-        } else {
-            this.lastNode = newNode;
-        }
-
-        newNode.prev = antPtr;
-
-        this.n++;
-        return true;
     }
 
-    remove(value) {
-        if (this.n === 0) {
-            return false;
+    remove(key){
+        const index = this.hashFunc(key % MAX);
+
+        for(var i = 0; i < this.table[index].length; i++){
+            if(this.table[index][i].key == key){
+                this.table[index].splice(i, 1);
+                //delete this.table[index][i];
+                this.n--;
+                return true;
+            }
         }
 
-        var antPtr = new Node(null);
-        var curPtr = this.firstNode;
+        return false;
 
-        while (curPtr != null && curPtr.data.key != value) {
-            antPtr = curPtr;
-            curPtr = curPtr.next;
-        }
-
-        if (curPtr.data.key != value) {
-            return false;
-        }
-
-        if (antPtr && antPtr.data != null) {
-            console.log(antPtr)
-            antPtr.next = curPtr.next;
-        } else {
-            this.firstNode = curPtr.next;
-        }
-
-        if (curPtr.next) {
-            var nextPtr = curPtr.next;
-            nextPtr.prev = curPtr.prev;
-        } else {
-            this.lastNode = curPtr.prev;
-        }
-
-        //delete(curPtr);
-        this.n--;
-        return true;
     }
 
-    search(value) {
-        if (this.n === 0) {
-            return false;
+    search(key){
+        const index = this.hashFunc(key % MAX);
+
+        for(var i = 0; i < this.table[index].length; i++){
+            if(this.table[index][i].key == key){
+                return true;
+            }
         }
 
-        var antPtr = new Node(null);
-        var curPtr = this.firstNode;
-
-        while (curPtr != null && curPtr.data.value < value && curPtr.next != null) {
-            antPtr = curPtr;
-            curPtr = curPtr.next;
-        }
-
-        if (curPtr.data.value != value) {
-            return false;
-        }
-
-        return true;
+        return false;
     }
+
+    hashFunc(key){
+        if(key > MAX){
+            this.hashFunc(key % MAX);
+        }
+        return key;
+    }
+
+
+}
+
+function Add(){
+    var key = parseInt(document.getElementById("keyValue").value);
+    var value = document.getElementById("inpValue").value;
+    let kv = new KeyValue(key, value);
+    hd.insert(kv);
+}
+
+function Delete(){
+    var key = parseInt(document.getElementById("keyValue").value);
+    hd.remove(key);
+}
+
+function Search(){
+    var key = parseInt(document.getElementById("keyValue").value);
+    hd.search(key);
 }
 
 // ------------------------- VIS NETWORK -----------------------------
@@ -138,26 +120,27 @@ var options = {
     height: "800px",
     clickToUse: false,
     groups: {
-        //Azul
-        0: {
-            color: {
-                background: '#26b8e0',
-                border: '#2a30db',
-                highlight: {
-                    border: '#171b96',
-                    background: '#6db4de',
-                },
-            },
-            borderWidth: 3,
-        },
         //Cinza
-        1: {
+        0: {
             color: {
                 background: '#7a7a7a',
                 border: '#403c3c',
                 highlight: {
                     border: '#000000',
                     background: '#403c3c',
+                },
+            },
+            borderWidth: 3,
+        },
+        //Azul
+        1: {
+            color: {
+                
+                background: '#26b8e0',
+                border: '#2a30db',
+                highlight: {
+                        border: '#171b96',
+                        background: '#6db4de',
                 },
             },
             borderWidth: 3,
@@ -173,7 +156,19 @@ var options = {
                 },
             },
             borderWidth: 3,
-        }
+        },
+        //Verde
+        3: {
+            color:{
+                background: '#aee693',
+                border: '#479c32',
+                highlight: {
+                    border: '#517348',
+                    background: '#b9e0af',
+                },
+            },
+            borderWidth: 3,
+        },
     },
     edges: {
         arrows: {
@@ -200,76 +195,30 @@ var options = {
     }
 };
 
-function ReadDoubleLinkedList() {
-    var temp = l.firstNode;
-
-    nodes.add({
-        id: nodesIds,
-        label: "",
-        group: 1
+function StartingNodes(){
+    var nodesItems = nodes.get({
+        fields: ['id', 'label', 'group'],
     });
-    var first = nodesIds;
-    nodesIds++;
-    nodes.add({
-        id: nodesIds,
-        label: "",
-        group: 1
-    });
-    var last = nodesIds;
-    nodesIds++;
 
-    while (temp) {
+    for(var i = 0; i < MAX; i++){
+        var str = "Index " + i;
         nodes.add({
             id: nodesIds,
-            label: String(temp.data),
-            group: 0
+            label: str,
+            group: 3,
         });
-
-        if (temp.prev == null) {
-            edges.add({
-                id: edgesIds,
-                from: String(nodesIds),
-                to: String(first)
-            });
-            edgesIds++;
-        } else if (temp.next == null) {
-            edges.add({
-                id: edgesIds,
-                from: String(prevNode),
-                to: String(nodesIds)
-            });
-            edgesIds++;
-            edges.add({
-                id: edgesIds,
-                from: String(nodesIds),
-                to: String(prevNode)
-            });
-            edgesIds++;
-            edges.add({
-                id: edgesIds,
-                from: String(nodesIds),
-                to: String(last)
-            });
-            edgesIds++;
-        } else {
-            edges.add({
-                id: edgesIds,
-                from: String(prevNode),
-                to: String(nodesIds)
-            });
-            edgesIds++;
-            edges.add({
-                id: edgesIds,
-                from: String(nodesIds),
-                to: String(prevNode)
-            });
-            edgesIds++;
-        }
-
         nodesIds++;
-        prevNode = nodesIds - 1;
-        temp = temp.next;
     }
+
+    for(var i = 0; i < MAX-1; i++){
+        edges.add({
+            id: edgesIds,
+            from: i,
+            to: i+1
+        });
+        edgesIds++;
+    }
+
 }
 
 function AddNodes() {
@@ -580,101 +529,8 @@ function UpdateScreen() {
     var network = new vis.Network(container, data, options);
 };
 
-//------------------------------ HASH IMPLEMENTATION ------------------------------
-
-const MAX = 10;
-
-class KeyValue{
-    constructor(key, value){
-        this.key = key;
-        this.value = value;
-    }
-}
-
-class HashDictionary{
-    constructor(){
-        //let table = new DoubleLinkedList();
-        this.table = [];
-        //console.log(table);
-        //table.push("Adele");
-        //console.log(table);
-        this.n = 0;
-
-        for(var i = 0; i < MAX; i++){
-            this.table.push(new Array());
-            //table.push(new Array());
-        }
-
-        console.log(this.table)
-
-    }
-
-    insert(item){
-        console.log("insert");
-        const index = this.hashFunc(item.key % MAX);
-
-        if(index < MAX){
-            this.table[index].push(item);
-            this.n++;
-            return true;
-        }
-        return false;
-
-    }
-
-    remove(key){
-        console.log("remove");
-        const index = this.hashFunc(key % MAX);
-
-        console.log("Tabela: ",this.table);
-        console.log("Lista: ",this.table[index]);
-        console.log("Tamanho lista: ", this.table[index].length);
-        console.log("Elemento: ", this.table[index][0]);
-        console.log("Chave: ", this.table[index][0].key);
-        console.log("Chave de busca: ", key);
-        console.log(this.tables[index][i].key === key);
-
-        if(index < MAX){
-            for(var i = 0; i < this.tables[index].length; i++){
-                if(this.tables[index][i].key === key){
-                    this.tables[index][i].splice(i, 1);
-                    this.n--;
-                    console.log(this.table);
-                    return true;
-                }
-            }
-        }
-
-        return false;
-
-    }
-
-    hashFunc(key){
-        console.log("hashFunc");
-        if(key > MAX){
-            console.log("entrei");
-            this.hashFunc(key % MAX);
-        }
-        return key;
-    }
-
-
-}
-
-function Add(){
-    let key = parseInt(document.getElementById("keyValue").value);
-    let value = document.getElementById("inpValue").value;
-    let kv = new KeyValue(key, value);
-    hd.insert(kv);
-}
-
-function Delete(){
-    var key = parseInt(document.getElementById("keyValue").value);
-    hd.remove(key);
-}
-
-function Search(){
-
-}
+//Execução
 
 let hd = new HashDictionary();
+
+var network = new vis.Network(container, data, options);
