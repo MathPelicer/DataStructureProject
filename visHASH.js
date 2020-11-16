@@ -34,8 +34,8 @@ class HashDictionary{
         }
         else{
             alert("Já existe outro elemento com essa chave.");
+            return false;
         }
-        return false;
 
     }
 
@@ -50,6 +50,8 @@ class HashDictionary{
                 return true;
             }
         }
+
+        alert("O elemento " + key + " não existe na hash.")
 
         return false;
 
@@ -90,12 +92,23 @@ function Add(){
 
 function Delete(){
     var key = parseInt(document.getElementById("keyValue").value);
-    hd.remove(key);
+    var removeNodeBool = hd.remove(key);
+    if(removeNodeBool){
+        RemoveNode(key);
+    }
 }
 
 function Search(){
+    console.log('pesquisa');
     var key = parseInt(document.getElementById("keyValue").value);
-    hd.search(key);
+    var searchNodeBool = hd.search(key);
+    if(searchNodeBool){
+        console.log('elemento existe')
+        SearchNode(key);
+    }
+    else{
+        alert("O elemento " + key + " não existe na hash.")
+    }
 }
 
 // ------------------------- VIS NETWORK -----------------------------
@@ -183,6 +196,9 @@ var options = {
             }
         }
     },
+    interaction: {
+        hover: true
+    },
     manipulation: {
         enabled: true
     },
@@ -205,11 +221,12 @@ function StartingNodes(){
     });
 
     for(var i = 0; i < MAX; i++){
-        var str = "" + i;
+        var str = "Index " + i;
         nodes.add({
             id: nodesIds,
             label: str,
             group: i,
+            title: str
         });
         nodesIds++;
     }
@@ -241,13 +258,14 @@ function AddNodes(nodeKV) {
         fields: ['id', 'from', 'to'],
     });
 
-    //console.log(hd.table)   
+    //console.log(hd.table) 
     
     if(hd.table[index].length <= 1){
         nodes.add({
             id: nodesIds,
             label: newNodeValue,
             group: index,
+            title: newNodeKey
         });
 
         edges.add({
@@ -276,6 +294,7 @@ function AddNodes(nodeKV) {
                     id: nodesIds,
                     label: newNodeValue,
                     group: index,
+                    title: newNodeKey
                 });
         
                 edges.add({
@@ -293,65 +312,113 @@ function AddNodes(nodeKV) {
     }
 }
 
-function RemoveNode(){
+function RemoveNode(nodeKey){
     var i;
-    var removedNodeValue = document.getElementById("inpValue").value;
-    var removedNodeValue = document.getElementById("keyValue").value;
+    var j;
+    var k;
 
-    var verify = l.remove(parseInt(removedNodeValue));
+    var prevNodeId = null;
+    var nextNodeId = null;
+    var updateEdgeId = null;
+    var removingEdgeId = null;
 
-    if(!verify){
-        return false;
-    }
+    const index = hd.hashFunc(nodeKey % MAX);
 
     var nodesItems = nodes.get({
-        fields: ['id', 'label']
+        fields: ['id', 'title']
     });
 
     var edgesItems = edges.get({
         fields: ['id', 'from', 'to']
     });
 
-    
+    //procura o node que será removido
+    for(i = 0; i < nodesItems.length; i++){
+        if(nodesItems[i].title == nodeKey){
+            var removingNodeId = nodesItems[i].id;
+            console.log("I");
+            console.log("Removing Node:", nodesItems[i]);
+            console.log("Removing Node Id:", removingNodeId);
+            //procura qual é o node anterior
+            for(j = 0; j < edgesItems.length; j++){
+                if(edgesItems[j].to == removingNodeId){
+                    prevNodeId = edgesItems[j].from;
+                    removingEdgeId = edgesItems[j].id;
+                    console.log("J");
+                    console.log("Prev Edge:", edgesItems[j]);
+                    console.log("Prev Node Id:", prevNodeId);
+                    console.log("Removing Edge Id:", removingEdgeId);
+                    //verifica se há um node seguinte
+                    for(k = 0; k < edgesItems.length; k++){
+                        if(edgesItems[k].from == removingNodeId){
+                            nextNodeId = edgesItems[k].to;
+                            updateEdgeId = edgesItems[j].id;
+                            removingEdgeId = edgesItems[k].id;
+                            console.log("K");
+                            console.log("Next Edge:", edgesItems[k]);
+                            console.log("Next Node Id:", nextNodeId);
+                            console.log("Update Edge Id:", updateEdgeId);
+                            console.log("Removing Edge Id:", removingEdgeId);
+                            break;
+                        }
+                    }
+                    break;
+                }
+            }
+            break;
+        }
+    }
+
+    nodes.remove({id: removingNodeId});
+    edges.remove({id: removingEdgeId});
+
+    if(nextNodeId != null){
+        console.log("update");
+        edges.update({id: updateEdgeId, from: prevNodeId, to: nextNodeId});
+    }
 
 }
 
-function SearchNode(){
-    //define o valor de entrada em uma variável
-    var value = document.getElementById("inpValue").value;
-
-    //verifica se o elemento está na lista
-    if(!l.search(value)){
-        var str = "O elemento " + value + " não existe na lista.";
-        alert(str);
-        return false;
-    }
+function SearchNode(nodeKey){
+    //indica qual index da tabela estará o elemento
+    const index = hd.hashFunc(nodeKey % MAX);
 
     //cria um vetor acessivel com os elementos do vetor nodes
     var nodesElem = nodes.get({
-        fields: ['id', 'label', 'group']
+        fields: ['id', 'label', 'group', 'title']
     });
 
-    //procura o primeiro node com o mesmo valor de label q o 'value'
+    //procura o primeiro node com o mesmo valor de label q o 'nodeKey'
     for(var i = 0; i < nodesElem.length; i++){
-        if(parseInt(nodesElem[i].label) == value){
+        console.log("Elemento atual: ", nodesElem[i]);
+        if(parseInt(nodesElem[i].title) == nodeKey){
+            console.log("Elemento compativel: ", nodesElem[i].label)
             var nodeId = nodesElem[i].id;
+            var nodeGroup = nodesElem[i].group;
             //atualiza a cor do node desejado
-            nodes.update({id: nodeId, group: 2});
+            nodes.update({id: nodeId, group: 11});
             //ativa um intervalo e depois retorna a cor do node para a cor original
-            setTimeout(() => { nodes.update({id: nodeId, group: 0}); }, 3500);
+            setTimeout(() => { nodes.update({id: nodeId, group: nodeGroup}); }, 3500);
             return true;
         }
     }
 
 }
 
-function UpdateScreen() {
+/*function UpdateScreen() {
     var network = new vis.Network(container, data, options);
-};
+};*/
 
 //Execução
 
 let hd = new HashDictionary();
 
 var network = new vis.Network(container, data, options);
+
+/*network.on("showPopup", function (params) {
+    document.getElementById("eventSpan").innerHTML =
+      "<h2>showPopup event: </h2>" + JSON.stringify(params, null, 4);
+  });
+  network.on("hidePopup", function () {
+    console.log("hidePopup Event");
+  });*/
