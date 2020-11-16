@@ -247,11 +247,8 @@ function AddNodes(nodeKV) {
     var newNodeKey = nodeKV.key;
     var index = hd.hashFunc(newNodeKey % MAX);
 
-    console.log("Chave: " + newNodeKey)
-    console.log("Valor: " + newNodeValue)
-
     var nodesItems = nodes.get({
-        fields: ['id', 'label', 'group'],
+        fields: ['id', 'label', 'group', 'title'],
     });
  
     var edgesItems = edges.get({
@@ -280,16 +277,11 @@ function AddNodes(nodeKV) {
     else{
         var lastElementIndex = hd.table[index].length - 2;
 
-        console.log("Último elemento: ", lastElementIndex)
-
         for(var i = 0; i < nodes.length; i ++){
             var curNode = nodesItems[i];
-
-            console.log("Node Atual: ", curNode);
             //console.log(hd.table[index][lastElementIndex].value);
             
-            if(curNode.label == hd.table[index][lastElementIndex].value){
-                console.log("achei")
+            if(curNode.title == hd.table[index][lastElementIndex].key){
                 nodes.add({
                     id: nodesIds,
                     label: newNodeValue,
