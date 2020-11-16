@@ -81,8 +81,11 @@ function Add(){
     var key = parseInt(document.getElementById("keyValue").value);
     var value = document.getElementById("inpValue").value;
     let kv = new KeyValue(key, value);
-    hd.insert(kv);
-    AddNodes(key, value);
+    var addNodeBool = hd.insert(kv);
+    //AddNodes(key, value);
+    if(addNodeBool){
+        AddNodes(kv);
+    }
 }
 
 function Delete(){
@@ -222,9 +225,9 @@ function StartingNodes(){
 
 }
 
-function AddNodes() {
-    var newNodeValue = document.getElementById("inpValue").value;
-    var newNodeKey = document.getElementById("keyValue").value;
+function AddNodes(nodeKV) {
+    var newNodeValue = nodeKV.value;
+    var newNodeKey = nodeKV.key;
     var index = hd.hashFunc(newNodeKey % MAX);
 
     console.log("Chave: " + newNodeKey)
@@ -238,7 +241,7 @@ function AddNodes() {
         fields: ['id', 'from', 'to'],
     });
 
-    console.log(hd.table)   
+    //console.log(hd.table)   
     
     if(hd.table[index].length <= 1){
         nodes.add({
@@ -259,13 +262,13 @@ function AddNodes() {
     else{
         var lastElementIndex = hd.table[index].length - 2;
 
-        console.log(lastElementIndex)
+        console.log("Último elemento: ", lastElementIndex)
 
         for(var i = 0; i < nodes.length; i ++){
             var curNode = nodesItems[i];
 
-            console.log(curNode)
-            console.log(hd.table[index][lastElementIndex].value)
+            console.log("Node Atual: ", curNode);
+            //console.log(hd.table[index][lastElementIndex].value);
             
             if(curNode.label == hd.table[index][lastElementIndex].value){
                 console.log("achei")
@@ -283,6 +286,8 @@ function AddNodes() {
                 
                 nodesIds++;
                 edgesIds++;
+
+                return true;
             }
         }
     }
